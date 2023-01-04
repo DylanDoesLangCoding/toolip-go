@@ -8,54 +8,32 @@ import (
 )
 
 func TestNextToken(t *testing.T) {
-	input := `string start = "Welcome to "
-string langName = "Toolip"
-func string concat(string a, string b)
-	return a .. b
-end
-string message = concat(start, langName)`
+	input := `. .. = * - / // ** % ++ -- > < << >> <> -> ..=;`
 
 	tests := []struct {
 		expectedType  token.TokenType
 		expectedValue string
 	}{
-		{token.STRTYPE, "string"},
-		{token.IDENTIFIER, "start"},
-		{token.ASSIGN, "="},
-		{token.STRVAL, "\"Welcome to \""},
-		{token.NEWLINE, "\n"},
-		{token.STRTYPE, "string"},
-		{token.IDENTIFIER, "langName"},
-		{token.ASSIGN, "="},
-		{token.STRVAL, "\"Toolip\""},
-		{token.NEWLINE, "\n"},
-		{token.FUNC, "func"},
-		{token.STRTYPE, "string"},
-		{token.IDENTIFIER, "concat"},
-		{token.LPAREN, "("},
-		{token.STRTYPE, "string"},
-		{token.IDENTIFIER, "a"},
-		{token.COMMA, ","},
-		{token.STRTYPE, "string"},
-		{token.IDENTIFIER, "b"},
-		{token.RPAREN, ")"},
-		{token.NEWLINE, "\n"},
-		{token.RETURN, "return"},
-		{token.IDENTIFIER, "a"},
+		{token.DOT, "."},
 		{token.CONCAT, ".."},
-		{token.IDENTIFIER, "b"},
-		{token.NEWLINE, "\n"},
-		{token.END, "end"},
-		{token.NEWLINE, "\n"},
-		{token.STRTYPE, "string"},
-		{token.IDENTIFIER, "message"},
 		{token.ASSIGN, "="},
-		{token.IDENTIFIER, "concat"},
-		{token.LPAREN, "("},
-		{token.IDENTIFIER, "start"},
-		{token.COMMA, ","},
-		{token.IDENTIFIER, "langName"},
-		{token.RPAREN, ")"},
+		{token.MULT, "*"},
+		{token.MINUS, "-"},
+		{token.DIV, "/"},
+		{token.FDIV, "//"},
+		{token.EXPO, "**"},
+		{token.MOD, "%"},
+		{token.INCREMENT, "++"},
+		{token.DECREMENT, "--"},
+		{token.GT, ">"},
+		{token.LT, "<"},
+		{token.LSHIFT, "<<"},
+		{token.RSHIFT, ">>"},
+		{token.LT, "<"},
+		{token.GT, ">"},
+		{token.ARROW, "->"},
+		{token.CONCAT, "..="},
+		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
 

@@ -14,7 +14,7 @@ const (
 
 	// Identifiers + literals
 	IDENTIFIER = "IDENTIFIER"
-	INT        = "INT"
+	INTVAL     = "INTVAL"
 	FLOAT      = "FLOAT"
 	CHAR       = "CHAR"
 	STRVAL     = "STRVAL"
@@ -24,6 +24,8 @@ const (
 	ASSIGN     = "="
 	INCREMENT  = "++"
 	DECREMENT  = "--"
+	LSHIFTEQ   = "<<="
+	RSHIFTEQ   = ">>="
 	PLUSEQ     = "+="
 	MINUSEQ    = "-="
 	EXPOEQ     = "**="
@@ -36,10 +38,11 @@ const (
 	LTEQ       = "<="
 	GTEQ       = ">="
 	BOOLNOTEQ  = "!="
-	BITNOTEQ   = "~="
 	BITANDEQ   = "&="
 	BITOREQ    = "|="
 	BITXOREQ   = "^="
+	LSHIFT     = "<<"
+	RSHIFT     = ">>"
 	PLUS       = "+"
 	MINUS      = "-"
 	EXPO       = "**"
@@ -49,13 +52,15 @@ const (
 	MOD        = "%"
 	CONCAT     = ".."
 	COALESCE   = "??"
+	TERNARY    = "?"
 	LT         = "<"
 	GT         = ">"
 	BOOLNOT    = "!"
-	BITNOT     = "~"
+	BITNOT     = "~" //unary not
 	BITAND     = "&"
 	BITOR      = "|"
 	BITXOR     = "^"
+	HASH       = "#" //length of attached function, data structure or string
 
 	//Delimiters
 	SEMICOLON = ";"
@@ -78,12 +83,14 @@ const (
 	UNSAFE      = "UNSAFE"
 	FUNC        = "FUNC"
 	END         = "END"
+	SELF        = "SELF"
 	FOR         = "FOR"
 	DO          = "DO"
 	WHILE       = "WHILE"
 	LOOP        = "LOOP"
 	BREAK       = "BREAK"
 	TO          = "TO"
+	ETC         = "ETC"
 	SWITCH      = "SWITCH"
 	CASE        = "CASE"
 	INT8TYPE    = "INT8TYPE"
@@ -99,6 +106,7 @@ const (
 	BOOLTYPE    = "BOOLTYPE"
 	CHARTYPE    = "CHARTYPE"
 	STRTYPE     = "STRTYPE"
+	VOID        = "VOID"
 	TABLE       = "TABLE" /* acts as either an array or hash map*/
 	SET         = "SET"   /* a stack-queue hybrid */
 	LIST        = "LIST"
@@ -111,6 +119,7 @@ const (
 	AND         = "AND"
 	OR          = "OR"
 	NOT         = "NOT"
+	XOR         = "XOR"
 	TRUE        = "TRUE"
 	FALSE       = "FALSE"
 	NIL         = "NIL"
@@ -124,6 +133,7 @@ var keywords = map[string]TokenType{
 	"unsafe":  UNSAFE,
 	"func":    FUNC,
 	"end":     END,
+	"self":    SELF,
 	"for":     FOR,
 	"do":      DO,
 	"while":   WHILE,
@@ -139,6 +149,7 @@ var keywords = map[string]TokenType{
 	"twolist": TWOLIST,
 	"enum":    ENUM,
 	"to":      TO,
+	"etc":     ETC,
 	"string":  STRTYPE,
 	"char":    CHARTYPE,
 	"int8":    INT8TYPE,
@@ -152,10 +163,12 @@ var keywords = map[string]TokenType{
 	"flt32":   FLOAT32TYPE,
 	"flt64":   FLOAT64TYPE,
 	"bool":    BOOLTYPE,
+	"void":    VOID,
 	"return":  RETURN,
 	"break":   BREAK,
 	"and":     AND,
 	"or":      OR,
+	"xor":     XOR,
 	"not":     NOT,
 	"true":    TRUE,
 	"false":   FALSE,
