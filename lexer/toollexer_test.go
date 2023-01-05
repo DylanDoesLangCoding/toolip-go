@@ -8,7 +8,7 @@ import (
 )
 
 func TestNextToken(t *testing.T) {
-	input := `. .. = * - / // ** % ++ -- > < << >> <> -> ..=;`
+	input := `. .. = * - / // ** % ++ -- > < << >> <> -> ..= aba "caba" 1231321312.123213;`
 
 	tests := []struct {
 		expectedType  token.TokenType
@@ -32,7 +32,10 @@ func TestNextToken(t *testing.T) {
 		{token.LT, "<"},
 		{token.GT, ">"},
 		{token.ARROW, "->"},
-		{token.CONCAT, "..="},
+		{token.CONCATEQ, "..="},
+		{token.IDENTIFIER, "aba"},
+		{token.STRVAL, "\"caba\""},
+		{token.FLOATVAL, "1231321312.123213"},
 		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
@@ -48,6 +51,6 @@ func TestNextToken(t *testing.T) {
 		if tok.Type != tt.expectedType {
 			t.Fatalf("lexer/toollexer_test.go:%d. expected=(%q: %q), got=(%q: %q).", lineNo, tt.expectedType, tt.expectedValue, tok.Type, tok.Value)
 		}
-		fmt.Printf("Token( %q, %q)\n", tok.Type, tok.Value)
+		fmt.Printf("Token(%q, %q)\n", tok.Type, tok.Value)
 	}
 }

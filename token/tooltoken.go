@@ -15,7 +15,7 @@ const (
 	// Identifiers + literals
 	IDENTIFIER = "IDENTIFIER"
 	INTVAL     = "INTVAL"
-	FLOAT      = "FLOAT"
+	FLOATVAL   = "FLOATVAL"
 	CHAR       = "CHAR"
 	STRVAL     = "STRVAL"
 
@@ -56,13 +56,13 @@ const (
 	LT         = "<"
 	GT         = ">"
 	BOOLNOT    = "!"
-	BITNOT     = "~" //unary not
+	BITNOT     = "~" // unary not
 	BITAND     = "&"
 	BITOR      = "|"
 	BITXOR     = "^"
-	HASH       = "#" //length of attached function, data structure or string
+	HASH       = "#" // length of attached function, data structure or string
 
-	//Delimiters
+	// Delimiters
 	SEMICOLON = ";"
 	COMMA     = ","
 	DOT       = "."
@@ -75,7 +75,7 @@ const (
 	LBRACKET  = "["
 	RBRACKET  = "]"
 
-	//Keywords
+	// Keywords
 	GLOBAL      = "GLOBAL"
 	CONST       = "CONST"
 	STATIC      = "STATIC"
@@ -84,6 +84,10 @@ const (
 	FUNC        = "FUNC"
 	END         = "END"
 	SELF        = "SELF"
+	IF          = "IF"
+	THEN        = "THEN"
+	ELSE        = "ELSE"
+	ELSEIF      = "ELSEIF"
 	FOR         = "FOR"
 	DO          = "DO"
 	WHILE       = "WHILE"
@@ -134,6 +138,10 @@ var keywords = map[string]TokenType{
 	"func":    FUNC,
 	"end":     END,
 	"self":    SELF,
+	"if":      IF,
+	"then":    THEN,
+	"else":    ELSE,
+	"elseif":  ELSEIF,
 	"for":     FOR,
 	"do":      DO,
 	"while":   WHILE,

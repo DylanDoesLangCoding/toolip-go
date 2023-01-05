@@ -27,15 +27,14 @@ func (l *Lexer) readChar() {
 		l.ch = l.input[l.readPosition]
 	}
 	l.position = l.readPosition
-	l.readPosition += 1
+	l.readPosition++
 }
 
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
-	} else {
-		return l.input[l.readPosition]
 	}
+	return l.input[l.readPosition]
 }
 
 func (l *Lexer) NextToken() token.Token {
@@ -50,64 +49,79 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			value := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.EQUALS, Value: value}
-		} else {
-			tok = newToken(token.ASSIGN, l.ch)
+			break
 		}
+		tok = newToken(token.ASSIGN, l.ch)
+		break
 	case ';':
 		tok = newToken(token.SEMICOLON, l.ch)
+		break
 	case '(':
 		tok = newToken(token.LPAREN, l.ch)
+		break
 	case ')':
 		tok = newToken(token.RPAREN, l.ch)
+		break
 	case '{':
 		tok = newToken(token.LBRACE, l.ch)
+		break
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+		break
 	case '[':
 		tok = newToken(token.LBRACKET, l.ch)
+		break
 	case ']':
 		tok = newToken(token.RBRACKET, l.ch)
+		break
 	case '#':
 		if l.peekChar() == '#' {
 			l.eatLineComment()
+			break
 		} else if l.peekChar() == '[' {
 			l.eatBlockComment()
-		} else {
-			tok = newToken(token.HASH, l.ch)
+			break
 		}
+		tok = newToken(token.HASH, l.ch)
+		break
 	case '+':
 		if l.peekChar() == '+' {
 			ch := l.ch
 			l.readChar()
 			value := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.INCREMENT, Value: value}
+			break
 		} else if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
 			value := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.PLUSEQ, Value: value}
-		} else {
-			tok = newToken(token.PLUS, l.ch)
+			break
 		}
+		tok = newToken(token.PLUS, l.ch)
+		break
 	case '-':
 		if l.peekChar() == '-' {
 			ch := l.ch
 			l.readChar()
 			value := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.DECREMENT, Value: value}
+			break
 		} else if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
 			value := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.MINUSEQ, Value: value}
+			break
 		} else if l.peekChar() == '>' {
 			ch := l.ch
 			l.readChar()
 			value := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.ARROW, Value: value}
-		} else {
-			tok = newToken(token.MINUS, l.ch)
+			break
 		}
+		tok = newToken(token.MINUS, l.ch)
+		break
 	case '*':
 		if l.peekChar() == '*' {
 			ch := l.ch
@@ -117,17 +131,19 @@ func (l *Lexer) NextToken() token.Token {
 				l.readChar()
 				value += string(l.ch)
 				tok = token.Token{Type: token.EXPOEQ, Value: value}
-			} else {
-				tok = token.Token{Type: token.EXPO, Value: value}
+				break
 			}
+			tok = token.Token{Type: token.EXPO, Value: value}
+			break
 		} else if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
 			value := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.MULTEQ, Value: value}
-		} else {
-			tok = newToken(token.MULT, l.ch)
+			break
 		}
+		tok = newToken(token.MULT, l.ch)
+		break
 	case '/':
 		if l.peekChar() == '/' {
 			ch := l.ch
@@ -137,26 +153,28 @@ func (l *Lexer) NextToken() token.Token {
 				l.readChar()
 				value += string(l.ch)
 				tok = token.Token{Type: token.FDIVEQ, Value: value}
-			} else {
-				tok = token.Token{Type: token.FDIV, Value: value}
+				break
 			}
+			tok = token.Token{Type: token.FDIV, Value: value}
+			break
 		} else if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
 			value := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.DIVEQ, Value: value}
-		} else {
-			tok = newToken(token.DIV, l.ch)
+			break
 		}
+		tok = newToken(token.DIV, l.ch)
 	case '%':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
 			value := string(ch) + string(l.ch)
 			tok = token.Token{Type: token.MODEQ, Value: value}
-		} else {
-			tok = newToken(token.MOD, l.ch)
+			break
 		}
+		tok = newToken(token.MOD, l.ch)
+		break
 	case '<':
 		if l.peekChar() == '<' {
 			ch := l.ch
@@ -166,9 +184,10 @@ func (l *Lexer) NextToken() token.Token {
 				l.readChar()
 				value += string(l.ch)
 				tok = token.Token{Type: token.LSHIFTEQ, Value: value}
-			} else {
-				tok = token.Token{Type: token.LSHIFT, Value: value}
+				break
 			}
+			tok = token.Token{Type: token.LSHIFT, Value: value}
+			break
 		} else if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
@@ -186,9 +205,10 @@ func (l *Lexer) NextToken() token.Token {
 				l.readChar()
 				value += string(l.ch)
 				tok = token.Token{Type: token.RSHIFTEQ, Value: value}
-			} else {
-				tok = token.Token{Type: token.RSHIFT, Value: value}
+				break
 			}
+			tok = token.Token{Type: token.RSHIFT, Value: value}
+			break
 		} else if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
@@ -206,20 +226,24 @@ func (l *Lexer) NextToken() token.Token {
 				l.readChar()
 				value += string(l.ch)
 				tok = token.Token{Type: token.COALESCEEQ, Value: value}
-			} else {
-				tok = token.Token{Type: token.COALESCE, Value: value}
+				break
 			}
+			tok = token.Token{Type: token.COALESCE, Value: value}
+			break
 		} else {
 			tok = newToken(token.TERNARY, l.ch)
 		}
 	case ',':
 		tok = newToken(token.COMMA, l.ch)
+		break
 	case '"':
 		tok.Type = token.STRVAL
 		tok.Value = l.readSLString()
+		break
 	case '`':
 		tok.Type = token.STRVAL
 		tok.Value = l.readMLString()
+		break
 	case '.':
 		if l.peekChar() == '.' {
 			ch := l.ch
@@ -229,14 +253,16 @@ func (l *Lexer) NextToken() token.Token {
 				l.readChar()
 				value += string(l.ch)
 				tok = token.Token{Type: token.CONCATEQ, Value: value}
-			} else {
-				tok = token.Token{Type: token.CONCAT, Value: value}
+				break
 			}
+			tok = token.Token{Type: token.CONCAT, Value: value}
+			break
 		} else {
 			tok = newToken(token.DOT, l.ch)
 		}
 	case '\n':
 		tok = newToken(token.NEWLINE, l.ch)
+		break
 	case 0:
 		tok.Value = ""
 		tok.Type = token.EOF
@@ -246,12 +272,10 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Type = token.LookupIdent(tok.Value)
 			return tok
 		} else if isDigit(l.ch) {
-			tok.Type = token.INTVAL
-			tok.Value = l.readNumber()
+			tok = l.readNumber()
 			return tok
-		} else {
-			tok = newToken(token.ILLEGAL, l.ch)
 		}
+		tok = newToken(token.ILLEGAL, l.ch)
 	}
 
 	l.readChar()
@@ -282,6 +306,7 @@ func (l *Lexer) readSLString() string {
 			} else {
 				log.Fatalln("ERROR: Unrecognized escape character" + string(l.peekChar()) + ".")
 			}
+			break
 		}
 		if l.ch == '\n' {
 			log.Fatalln("ERROR: Multiple lines in a single-line string.")
@@ -360,11 +385,26 @@ func isNextIdentChar(ch byte) bool {
 	return isLetter(ch) || isDigit(ch)
 }
 
-func (l *Lexer) readNumber() string {
+func (l *Lexer) readNumber() token.Token {
 	position := l.position
+	var numType token.TokenType
 	l.readChar()
 	for isDigit(l.ch) {
 		l.readChar()
 	}
-	return l.input[position:l.position]
+	if l.ch == '.' {
+		l.readChar()
+		numsPastFloat := 0
+		for isDigit(l.ch) {
+			l.readChar()
+			numsPastFloat++
+		}
+		if numsPastFloat == 0 {
+			log.Fatalln("ERROR: Attempted to pass float without digits following the floating point.")
+		}
+		numType = token.FLOATVAL
+	} else {
+		numType = token.INTVAL
+	}
+	return token.Token{Type: numType, Value: l.input[position:l.position]}
 }
