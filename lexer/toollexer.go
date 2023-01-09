@@ -1,26 +1,36 @@
 package lexer
 
 import (
-	"log"
+	"encoding/hex"
+	"fmt"
+	"os"
+	"strings"
 	"toolip-go/token"
 )
-
-var a int = 1
 
 type Lexer struct {
 	input        string
 	position     int
 	readPosition int
+	lineNum      int
+	linePosition int
+	prevToken    token.Token
 	ch           byte
+	prevCh       byte
 }
+
+var numArgs int = len(os.Args)
 
 func NewLexer(input string) *Lexer {
 	l := &Lexer{input: input}
+	l.linePosition = -1
+	l.lineNum = 1
 	l.readChar()
 	return l
 }
 
 func (l *Lexer) readChar() {
+	l.prevCh = l.ch
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
 	} else {
@@ -28,6 +38,7 @@ func (l *Lexer) readChar() {
 	}
 	l.position = l.readPosition
 	l.readPosition++
+	l.linePosition++
 }
 
 func (l *Lexer) peekChar() byte {
@@ -39,6 +50,11 @@ func (l *Lexer) peekChar() byte {
 
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
+
+	if l.prevToken.Type == token.NEWLINE {
+		l.lineNum++
+		l.linePosition = -1
+	}
 
 	l.skipWhitespace()
 
@@ -232,9 +248,56 @@ func (l *Lexer) NextToken() token.Token {
 			break
 		} else {
 			tok = newToken(token.TERNARY, l.ch)
+			break
 		}
+	case '&':
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar()
+			value := string(ch) + string(l.ch)
+			tok = token.Token{Type: token.BITANDEQ, Value: value}
+			break
+		}
+		tok = newToken(token.BITAND, l.ch)
+		break
+	case '|':
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar()
+			value := string(ch) + string(l.ch)
+			tok = token.Token{Type: token.BITOREQ, Value: value}
+			break
+		}
+		tok = newToken(token.BITOR, l.ch)
+		break
+	case '~':
+		tok = newToken(token.BITNOT, l.ch)
+		break
+	case '^':
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar()
+			value := string(ch) + string(l.ch)
+			tok = token.Token{Type: token.BITXOREQ, Value: value}
+			break
+		}
+		tok = newToken(token.BITXOR, l.ch)
+		break
+	case '!':
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar()
+			value := string(ch) + string(l.ch)
+			tok = token.Token{Type: token.BOOLNOTEQ, Value: value}
+			break
+		}
+		tok = newToken(token.BOOLNOT, l.ch)
+		break
 	case ',':
 		tok = newToken(token.COMMA, l.ch)
+		break
+	case ':':
+		tok = newToken(token.COLON, l.ch)
 		break
 	case '"':
 		tok.Type = token.STRVAL
@@ -244,6 +307,9 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Type = token.STRVAL
 		tok.Value = l.readMLString()
 		break
+	case '\'':
+		tok.Type = token.CHARVAL
+		tok.Value = l.readCharString()
 	case '.':
 		if l.peekChar() == '.' {
 			ch := l.ch
@@ -259,6 +325,7 @@ func (l *Lexer) NextToken() token.Token {
 			break
 		} else {
 			tok = newToken(token.DOT, l.ch)
+			break
 		}
 	case '\n':
 		tok = newToken(token.NEWLINE, l.ch)
@@ -266,6 +333,7 @@ func (l *Lexer) NextToken() token.Token {
 	case 0:
 		tok.Value = ""
 		tok.Type = token.EOF
+		break
 	default:
 		if isLetter(l.ch) {
 			tok.Value = l.readIdentifier()
@@ -277,7 +345,7 @@ func (l *Lexer) NextToken() token.Token {
 		}
 		tok = newToken(token.ILLEGAL, l.ch)
 	}
-
+	l.prevToken = tok
 	l.readChar()
 	return tok
 }
@@ -293,23 +361,28 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 }
 
 func (l *Lexer) readSLString() string {
+	b := &strings.Builder{}
 	position := l.position + 1
 	for {
 		l.readChar()
 		if l.ch == 0 {
-			log.Fatalln("ERROR: End of file reached before string was closed")
-			break
-		}
-		if l.ch == '\\' {
-			if isEscapeChar(l.peekChar()) {
-				l.readChar()
-			} else {
-				log.Fatalln("ERROR: Unrecognized escape character" + string(l.peekChar()) + ".")
+			fmt.Printf("Toolip:%d:%d. End of file reached before single-line string was closed.\n", l.lineNum, l.linePosition)
+			if numArgs > 1 {
+				os.Exit(1)
 			}
 			break
 		}
+		if l.ch == '\\' {
+			l.readEscapeSequence(b)
+			// Skip over the '\\' and the matched single escape char
+			l.readChar()
+			continue
+		}
 		if l.ch == '\n' {
-			log.Fatalln("ERROR: Multiple lines in a single-line string.")
+			fmt.Printf("Toolip:%d:%d.: Multiple lines in a single-line string.\n", l.lineNum, l.linePosition)
+			if numArgs > 1 {
+				os.Exit(1)
+			}
 		}
 		if l.ch == '"' {
 			break
@@ -317,13 +390,15 @@ func (l *Lexer) readSLString() string {
 	}
 	return l.input[position:l.position]
 }
-
 func (l *Lexer) readMLString() string {
 	position := l.position + 1
 	for {
 		l.readChar()
 		if l.ch == 0 {
-			log.Fatalln("ERROR: End of file reached before string was closed")
+			fmt.Printf("Toolip:%d:%d.: End of file reached before multi-line string was closed.\n", l.lineNum, l.linePosition)
+			if numArgs > 1 {
+				os.Exit(1)
+			}
 			break
 		}
 		if l.ch == '`' {
@@ -333,11 +408,50 @@ func (l *Lexer) readMLString() string {
 	return l.input[position:l.position]
 }
 
+func (l *Lexer) readCharString() string {
+	b := &strings.Builder{}
+	position := l.position + 1
+	charCount := 0
+	for {
+		l.readChar()
+		if l.ch == 0 {
+			fmt.Printf("Toolip:%d:%d.: End of file reached before character string was closed.\n", l.lineNum, l.linePosition)
+			if numArgs > 1 {
+				os.Exit(1)
+			}
+			break
+		}
+		if l.ch == '\n' {
+			fmt.Printf("Toolip:%d:%d.: Multiple lines in a character string.\n", l.lineNum, l.linePosition)
+			if numArgs > 1 {
+				os.Exit(1)
+			}
+		}
+		if l.ch == '\'' {
+			if charCount > 1 {
+				fmt.Printf("Toolip:%d:%d.: More than 1 byte stored in a character string.\n", l.lineNum, l.linePosition)
+				if numArgs > 1 {
+					os.Exit(1)
+				}
+			}
+			break
+		}
+		charCount++
+		if l.ch == '\\' {
+			l.readEscapeSequence(b)
+		}
+	}
+	return l.input[position:l.position]
+}
+
 func (l *Lexer) eatLineComment() {
 	for {
 		l.readChar()
 		if l.ch == 0 {
-			log.Fatalln("ERROR: End of file reached before string was closed")
+			fmt.Printf("Toolip:%d:%d.: End of file reached before string was closed.\n", l.lineNum, l.linePosition)
+			if numArgs > 1 {
+				os.Exit(1)
+			}
 			break
 		}
 		if l.ch == '\n' {
@@ -350,7 +464,10 @@ func (l *Lexer) eatBlockComment() {
 	for {
 		l.readChar()
 		if l.ch == 0 {
-			log.Fatalln("ERROR: End of file reached before block comment was closed")
+			fmt.Printf("Toolip:%d:%d.: End of file reached before block comment was closed.\n", l.lineNum, l.linePosition)
+			if numArgs > 1 {
+				os.Exit(1)
+			}
 			break
 		}
 		if l.ch == ']' && l.peekChar() == '#' {
@@ -360,8 +477,34 @@ func (l *Lexer) eatBlockComment() {
 	}
 }
 
-func isEscapeChar(ch byte) bool {
-	return ch == 'n' || ch == '\\' || ch == 't' || ch == 'r' || ch == '"'
+func (l *Lexer) readEscapeSequence(b *strings.Builder) {
+	switch l.peekChar() {
+	case '"':
+		b.WriteByte('"')
+	case '\'':
+		b.WriteByte('\'')
+	case 'n':
+		b.WriteByte('\n')
+	case 'r':
+		b.WriteByte('\r')
+	case 't':
+		b.WriteByte('\t')
+	case '\\':
+		b.WriteByte('\\')
+	case 'x':
+		l.readChar()
+		l.readChar()
+		l.readChar()
+		src := string([]byte{l.prevCh, l.ch})
+		dst, err := hex.DecodeString(src)
+		if err != nil {
+			fmt.Printf("Toolip:%d:%d. Could not properly decode Hex Escape Sequence! :c\n", l.lineNum, l.linePosition)
+			if numArgs > 1 {
+				os.Exit(1)
+			}
+		}
+		b.Write(dst)
+	}
 }
 
 func (l *Lexer) readIdentifier() string {
@@ -400,7 +543,10 @@ func (l *Lexer) readNumber() token.Token {
 			numsPastFloat++
 		}
 		if numsPastFloat == 0 {
-			log.Fatalln("ERROR: Attempted to pass float without digits following the floating point.")
+			fmt.Printf("Toolip:%d:%d.: Attempted to pass float without digits following the floating point.\n", l.lineNum, l.linePosition)
+			if numArgs > 1 {
+				os.Exit(1)
+			}
 		}
 		numType = token.FLOATVAL
 	} else {

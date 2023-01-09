@@ -8,7 +8,7 @@ import (
 )
 
 func TestNextToken(t *testing.T) {
-	input := `. .. = * - / // ** % ++ -- > < << >> <> -> ..= aba "caba" 1231321312.123213;`
+	input := `. .. = * - / // ** % ++ -- > < << >> <> -> ..= aba "caba" 1231321312.12321;`
 
 	tests := []struct {
 		expectedType  token.TokenType
@@ -41,15 +41,11 @@ func TestNextToken(t *testing.T) {
 	}
 
 	l := NewLexer(input)
-	var lineNo int = 1
 	for i, tt := range tests {
 		i++
 		tok := l.NextToken()
-		if tok.Type == token.NEWLINE {
-			lineNo++
-		}
 		if tok.Type != tt.expectedType {
-			t.Fatalf("lexer/toollexer_test.go:%d. expected=(%q: %q), got=(%q: %q).", lineNo, tt.expectedType, tt.expectedValue, tok.Type, tok.Value)
+			t.Fatalf("lexer/toollexer_test.go:%d:%d. expected=(%q: %q), got=(%q: %q).", l.lineNum, l.linePosition, tt.expectedType, tt.expectedValue, tok.Type, tok.Value)
 		}
 		fmt.Printf("Token(%q, %q)\n", tok.Type, tok.Value)
 	}

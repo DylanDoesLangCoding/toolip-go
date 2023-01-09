@@ -16,7 +16,7 @@ const (
 	IDENTIFIER = "IDENTIFIER"
 	INTVAL     = "INTVAL"
 	FLOATVAL   = "FLOATVAL"
-	CHAR       = "CHAR"
+	CHARVAL    = "CHARVAL"
 	STRVAL     = "STRVAL"
 
 	// Operators
